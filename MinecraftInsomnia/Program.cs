@@ -17,18 +17,27 @@ namespace MinecraftInsomnia
         private const uint ES_CONTINUOUS = 0x80000000;
         private const uint ES_DISPLAY_REQUIRED = 0x00000002;
         private const uint ES_SYSTEM_REQUIRED = 0x00000001;
+        private const string APP_GUID = "60fc6fa8-195d-458d-b7b8-4866dc8094b7";
 
         private static NotifyIcon _trayIcon;
         private static CancellationTokenSource _cts = new CancellationTokenSource();
         private static ToolStripMenuItem exitMenu = new ToolStripMenuItem("Exit");
         private static ToolStripMenuItem autoStartMenu = new ToolStripMenuItem("Start at logon");
-        private static AutoStartManager autoStartManager = new AutoStartManager("60fc6fa8-195d-458d-b7b8-4866dc8094b7");
+        private static AutoStartManager autoStartManager = new AutoStartManager(APP_GUID);
+        private static Mutex mutex = null;
 
         [STAThread]
         static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
+
+            mutex = new Mutex(true, APP_GUID, out bool createdNew);
+
+            if (!createdNew)
+            {
+                return; // Exit if another instance is already running
+            }
 
             // Create tray icon
             _trayIcon = new NotifyIcon
